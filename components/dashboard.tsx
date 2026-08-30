@@ -4,6 +4,9 @@ import { useMemo, useState } from 'react'
 import {
   Activity,
   ArrowDownRight,
+  Bell,
+  Moon,
+  Sun,
   ArrowUpRight,
   BookOpen,
   ChevronDown,
@@ -54,11 +57,21 @@ export function Dashboard() {
   const [range, setRange] = useState('Last 30 days')
   const [query, setQuery] = useState('')
   const [launched, setLaunched] = useState(false)
+  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
+  const [commandOpen, setCommandOpen] = useState(false)
 
   const filteredCourses = useMemo(() => courses.filter((course) => course.name.toLowerCase().includes(query.toLowerCase()) || course.code.toLowerCase().includes(query.toLowerCase())), [query])
 
+  const chooseNav = (label: string) => {
+    setActiveNav(label)
+    setMobileOpen(false)
+    setCommandOpen(false)
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground">
+      {commandOpen && <div className="fixed inset-0 z-50 flex items-start justify-center bg-foreground/20 px-4 pt-24 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Command menu" onClick={() => setCommandOpen(false)}><div className="w-full max-w-lg rounded-2xl border border-border bg-card p-3 shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="flex items-center gap-3 rounded-xl bg-muted/60 px-3 py-2.5"><Search className="size-4 text-muted-foreground" /><input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search pages and courses..." className="min-w-0 flex-1 bg-transparent text-sm outline-none" onKeyDown={(event) => { if (event.key === 'Escape') setCommandOpen(false) }} /><kbd className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted-foreground">ESC</kbd></div><p className="px-2 pb-1 pt-4 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Pages</p><div className="flex flex-col gap-1">{navItems.map((item) => <button key={item.label} onClick={() => chooseNav(item.label)} className="flex items-center gap-3 rounded-lg px-3 py-2 text-left text-sm hover:bg-muted"><item.icon className="size-4 text-brand" />{item.label}<span className="ml-auto text-xs text-muted-foreground">Go to page</span></button>)}</div></div></div>}
       <aside className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col border-r border-border bg-sidebar px-4 py-5 transition-transform duration-300 lg:translate-x-0 ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="flex items-center justify-between px-3">
           <div className="flex items-center gap-3">
@@ -69,7 +82,7 @@ export function Dashboard() {
         </div>
         <div className="mt-10 flex flex-col gap-1">
           <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">Workspace</p>
-          {navItems.map((item) => { const Icon = item.icon; return <button key={item.label} onClick={() => { setActiveNav(item.label); setMobileOpen(false) }} className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-all ${activeNav === item.label ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm' : 'text-sidebar-foreground hover:bg-sidebar-accent'}`}><Icon className="size-[18px]" /><span>{item.label}</span>{item.label === 'Labs & JupyterHub' && <span className="ml-auto size-2 rounded-full bg-cyan" />}</button> })}
+          {navItems.map((item) => { const Icon = item.icon; return <button key={item.label} onClick={() => chooseNav(item.label)} className={`group flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition-all ${activeNav === item.label ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm' : 'text-sidebar-foreground hover:bg-sidebar-accent'}`}><Icon className="size-[18px]" /><span>{item.label}</span>{item.label === 'Labs & JupyterHub' && <span className="ml-auto size-2 rounded-full bg-cyan" />}</button> })}
         </div>
         <div className="mt-auto flex flex-col gap-1">
           <button className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-sidebar-foreground hover:bg-sidebar-accent"><Settings2 className="size-[18px]" />Settings</button>
@@ -81,9 +94,10 @@ export function Dashboard() {
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background/90 px-5 backdrop-blur-xl md:px-8">
           <div className="flex items-center gap-3"><button aria-label="Open navigation" onClick={() => setMobileOpen(true)} className="rounded-lg p-2 hover:bg-muted lg:hidden"><Menu className="size-5" /></button><div className="hidden items-center gap-2 text-sm text-muted-foreground md:flex"><span>Workspace</span><span>/</span><span className="font-medium text-foreground">{activeNav}</span></div><div className="flex items-center gap-2 text-sm font-medium md:hidden"><Sparkles className="size-4 text-brand" />Atlas Labs</div></div>
-          <div className="flex items-center gap-3"><label className="relative hidden md:block"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search courses..." className="h-9 w-56 rounded-lg border border-input bg-muted/40 pl-9 pr-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20" /></label><button aria-label="Command menu" className="hidden rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted md:block"><Command className="size-4" /></button><div className="size-8 rounded-full bg-brand-soft p-0.5"><div className="flex size-full items-center justify-center rounded-full bg-brand text-xs font-bold text-brand-foreground">JD</div></div></div>
+          <div className="flex items-center gap-3"><label className="relative hidden md:block"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search courses..." className="h-9 w-56 rounded-lg border border-input bg-muted/40 pl-9 pr-3 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20" /></label><button aria-label="Open command menu" onClick={() => setCommandOpen(true)} className="hidden rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted md:block"><Command className="size-4" /></button><button aria-label="Toggle theme" onClick={() => { const nextTheme = theme === 'light' ? 'dark' : 'light'; setTheme(nextTheme); document.documentElement.classList.toggle('dark', nextTheme === 'dark') }} className="rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted">{theme === 'light' ? <Moon className="size-4" /> : <Sun className="size-4" />}</button><button aria-label="View notifications" onClick={() => setNotificationsOpen(!notificationsOpen)} className="relative rounded-lg border border-border p-2 text-muted-foreground hover:bg-muted"><Bell className="size-4" /><span className="absolute right-1 top-1 size-1.5 rounded-full bg-warning" /></button><div className="size-8 rounded-full bg-brand-soft p-0.5"><div className="flex size-full items-center justify-center rounded-full bg-brand text-xs font-bold text-brand-foreground">JD</div></div></div>
         </header>
 
+        {notificationsOpen && <section className="absolute right-5 top-16 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-border bg-card p-4 shadow-xl" aria-label="Notifications"><div className="flex items-center justify-between"><div><h2 className="font-semibold">Notifications</h2><p className="text-xs text-muted-foreground">3 items need review</p></div><button onClick={() => setNotificationsOpen(false)} className="text-xs font-medium text-brand hover:underline">Dismiss</button></div><div className="mt-4 flex flex-col gap-3"><div className="flex gap-3 rounded-xl bg-warning-soft p-3"><span className="mt-1 size-2 shrink-0 rounded-full bg-warning" /><div><p className="text-sm font-medium">Assignment review queue</p><p className="mt-1 text-xs text-muted-foreground">18 submissions are ready for grading.</p></div></div><div className="flex gap-3 rounded-xl bg-cyan-soft p-3"><span className="mt-1 size-2 shrink-0 rounded-full bg-cyan" /><div><p className="text-sm font-medium">JupyterHub capacity</p><p className="mt-1 text-xs text-muted-foreground">Resource usage is currently at 68%.</p></div></div></div></section>}
         <main className="mx-auto max-w-[1500px] px-5 py-7 md:px-8 lg:py-9">
           <div className="animate-rise flex flex-col justify-between gap-5 md:flex-row md:items-end"><div><p className="mb-2 text-sm font-medium text-brand">Saturday, August 30, 2026</p><h1 className="text-3xl font-semibold tracking-tight md:text-4xl">Good morning, Jordan<span className="text-brand">.</span></h1><p className="mt-2 text-sm text-muted-foreground">Here&apos;s what&apos;s happening across your learning workspace.</p></div><button onClick={() => setLaunched(true)} className="group inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground shadow-lg shadow-brand/20 transition hover:-translate-y-0.5 hover:bg-brand/90"><Play className="size-4 fill-current transition group-hover:translate-x-0.5" />{launched ? 'Workspace opened' : 'Open JupyterHub'}</button></div>
 

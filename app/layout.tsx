@@ -1,9 +1,10 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { ThemeScript } from '@/components/theme-script'
 
 export const metadata: Metadata = {
-  title: 'Atlas Labs · Learning workspace',
+  title: 'University Platform · Admin',
   description: 'A focused command center for modern university learning operations.',
   generator: 'v0.app',
   icons: {
@@ -39,7 +40,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="bg-background">
+    <html lang="en" className="bg-background" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body className="antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
